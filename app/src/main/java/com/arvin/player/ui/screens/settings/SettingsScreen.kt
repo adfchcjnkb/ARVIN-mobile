@@ -38,7 +38,7 @@ fun SettingsScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val theme by settings.theme.collectAsState(initial = AppTheme.SYSTEM)
     // Language is owned by AppCompat's per-app locales (which actually re-render the UI), not DataStore.
-    val language = AppCompatDelegate.getApplicationLocales().let { if (it.isEmpty) "en" else it.get(0)?.language ?: "en" }
+    val language = AppCompatDelegate.getApplicationLocales().get(0)?.language ?: "en"
     val gapless by settings.gaplessEnabled.collectAsState(initial = true)
     val crossfadeMs by settings.crossfadeMs.collectAsState(initial = 0)
     val customFolders by settings.customFolders.collectAsState(initial = emptySet())
