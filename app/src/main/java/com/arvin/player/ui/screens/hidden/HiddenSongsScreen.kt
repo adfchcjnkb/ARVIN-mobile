@@ -1,5 +1,6 @@
 package com.arvin.player.ui.screens.hidden
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -70,9 +71,7 @@ fun HiddenSongsScreen(navController: NavHostController) {
                             Icon(ArvinIcons.Visibility, contentDescription = stringResource(R.string.unhide))
                         }
                     },
-                    modifier = Modifier.then(
-                        androidx.compose.foundation.clickable { player.playQueue(hidden, hidden.indexOf(song)) }
-                    )
+                    modifier = Modifier.clickable { player.playQueue(hidden, hidden.indexOf(song)) }
                 )
             }
         }

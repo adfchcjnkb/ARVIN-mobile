@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 /**
@@ -38,11 +39,11 @@ object ArvinIcons {
             strokeLineWidth = 2f,
             strokeLineCap = StrokeCap.Round,
             strokeLineJoin = StrokeJoin.Round
-        ) { block() }
+        ) { block(this) }
     }
 
     private fun ImageVector.Builder.solid(block: PathBuilder.() -> Unit) {
-        path(fill = SolidColor(Ink), pathFillType = PathFillType.NonZero) { block() }
+        path(fill = SolidColor(Ink), pathFillType = PathFillType.NonZero) { block(this) }
     }
 
     private fun PathBuilder.circle(cx: Float, cy: Float, r: Float) {

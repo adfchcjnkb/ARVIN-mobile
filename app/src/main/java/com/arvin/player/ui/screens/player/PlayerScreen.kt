@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -108,7 +109,7 @@ fun PlayerScreen(navController: NavHostController) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Box(modifier = Modifier.fillMaxSize()) {
-        PlayerBackdrop(albumArtUri = if (song != null) albumArtUri else null, palette = palette, isDark = skin.isDark)
+        PlayerBackdrop(art = if (song != null) albumArtUri else null, palette = palette, isDark = skin.isDark)
 
         Scaffold(
             containerColor = Color.Transparent,
