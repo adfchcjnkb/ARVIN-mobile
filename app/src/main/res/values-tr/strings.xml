@@ -52,7 +52,7 @@
     <string name="custom_folders">Özel müzik klasörleri</string>
     <string name="custom_folders_description">Varsayılan Müzik klasörü dışındaki klasörleri tara</string>
     <string name="add_folder">Klasör ekle</string>
-    <string name="app_lock_pin">Uygulama kilidi PIN'i</string>
+    <string name="app_lock_pin">Uygulama kilidi PIN\'i</string>
     <string name="pin_enabled">Etkin — kaldırmak için dokunun</string>
     <string name="pin_disabled">Devre dışı — PIN belirlemek için dokunun</string>
     <string name="set_pin">PIN belirle</string>
@@ -64,7 +64,7 @@
     <string name="use_pin_instead">Bunun yerine PIN kullan</string>
     <string name="try_biometric_again">Biyometrik kilit açmayı tekrar dene</string>
     <string name="biometric_unlock">Biyometrik kilit açma</string>
-    <string name="biometric_unlock_description">Kısayol olarak parmak izi veya yüz kullanın — PIN'iniz yedek olarak çalışmaya devam eder</string>
+    <string name="biometric_unlock_description">Kısayol olarak parmak izi veya yüz kullanın — PIN\'iniz yedek olarak çalışmaya devam eder</string>
     <string name="skip_previous">Önceki</string>
     <string name="play_pause">Oynat/duraklat</string>
     <string name="skip_next">Sonraki</string>

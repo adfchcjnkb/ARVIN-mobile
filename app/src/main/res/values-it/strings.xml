@@ -47,7 +47,7 @@
     <string name="wrong_pin">PIN errato</string>
     <string name="unlock">Sblocca</string>
     <string name="crossfade">Dissolvenza incrociata</string>
-    <string name="crossfade_description">La fine di un brano si sovrappone all'inizio del successivo, con una dissolvenza tra i due</string>
+    <string name="crossfade_description">La fine di un brano si sovrappone all\'inizio del successivo, con una dissolvenza tra i due</string>
     <string name="crossfade_off">Disattivata</string>
     <string name="custom_folders">Cartelle musicali personalizzate</string>
     <string name="custom_folders_description">Esegui la scansione di cartelle esterne alla cartella Musica predefinita</string>
@@ -60,11 +60,11 @@
     <string name="remove_pin_body">Questo rimuoverà la protezione del blocco app e i brani nascosti saranno visibili senza PIN.</string>
     <string name="remove">Rimuovi</string>
     <string name="unlock_arvin_player">Sblocca Arvin Player</string>
-    <string name="use_biometric_to_unlock">Usa l'impronta o il volto per sbloccare</string>
+    <string name="use_biometric_to_unlock">Usa l\'impronta o il volto per sbloccare</string>
     <string name="use_pin_instead">Usa invece il PIN</string>
     <string name="try_biometric_again">Riprova lo sblocco biometrico</string>
     <string name="biometric_unlock">Sblocco biometrico</string>
-    <string name="biometric_unlock_description">Usa l'impronta o il volto come scorciatoia — il tuo PIN continua a funzionare come riserva</string>
+    <string name="biometric_unlock_description">Usa l\'impronta o il volto come scorciatoia — il tuo PIN continua a funzionare come riserva</string>
     <string name="skip_previous">Precedente</string>
     <string name="play_pause">Riproduci/pausa</string>
     <string name="skip_next">Successivo</string>

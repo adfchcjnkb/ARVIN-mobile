@@ -37,7 +37,7 @@
     <string name="hide_song">Masquer le titre</string>
     <string name="scanning_library">Analyse de votre musique…</string>
     <string name="permission_needed_title">Accès à la musique requis</string>
-    <string name="permission_needed_body">Arvin Player a besoin d'une autorisation pour lire la musique sur votre appareil. Accordez-la dans les paramètres système pour voir votre bibliothèque.</string>
+    <string name="permission_needed_body">Arvin Player a besoin d\'une autorisation pour lire la musique sur votre appareil. Accordez-la dans les paramètres système pour voir votre bibliothèque.</string>
     <string name="open_settings">Ouvrir les paramètres</string>
     <string name="hidden_songs">Titres masqués</string>
     <string name="no_hidden_songs">Aucun titre masqué</string>
@@ -47,7 +47,7 @@
     <string name="wrong_pin">Code PIN incorrect</string>
     <string name="unlock">Déverrouiller</string>
     <string name="crossfade">Fondu enchaîné</string>
-    <string name="crossfade_description">La fin d'un titre chevauche le début du suivant, avec un fondu entre les deux</string>
+    <string name="crossfade_description">La fin d\'un titre chevauche le début du suivant, avec un fondu entre les deux</string>
     <string name="crossfade_off">Désactivé</string>
     <string name="custom_folders">Dossiers de musique personnalisés</string>
     <string name="custom_folders_description">Analyser des dossiers hors du dossier Musique par défaut</string>
@@ -64,9 +64,9 @@
     <string name="use_pin_instead">Utiliser le code PIN à la place</string>
     <string name="try_biometric_again">Réessayer le déverrouillage biométrique</string>
     <string name="biometric_unlock">Déverrouillage biométrique</string>
-    <string name="biometric_unlock_description">Utilisez l'empreinte ou le visage comme raccourci — votre code PIN reste disponible en secours</string>
+    <string name="biometric_unlock_description">Utilisez l\'empreinte ou le visage comme raccourci — votre code PIN reste disponible en secours</string>
     <string name="skip_previous">Précédent</string>
     <string name="play_pause">Lecture/pause</string>
     <string name="skip_next">Suivant</string>
-    <string name="widget_description">Contrôlez la lecture depuis l'écran d'accueil</string>
+    <string name="widget_description">Contrôlez la lecture depuis l\'écran d\'accueil</string>
 </resources>
