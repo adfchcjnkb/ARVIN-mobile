@@ -306,15 +306,18 @@ fun PlayerScreen(navController: NavHostController) {
                     }
                 }
             } else {
-                Column(
-                    modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 26.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(Modifier.height(8.dp))
-                    artAndVisual(Modifier.fillMaxWidth())
-                    Spacer(Modifier.weight(1f))
-                    controls(Modifier.fillMaxWidth())
-                    Spacer(Modifier.height(18.dp))
+                // Centre + cap the width so the art/controls stay a comfortable size on tablets.
+                Box(modifier = Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                    Column(
+                        modifier = Modifier.fillMaxHeight().widthIn(max = 520.dp).padding(horizontal = 26.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(Modifier.height(8.dp))
+                        artAndVisual(Modifier.fillMaxWidth())
+                        Spacer(Modifier.weight(1f))
+                        controls(Modifier.fillMaxWidth())
+                        Spacer(Modifier.height(18.dp))
+                    }
                 }
             }
         }

@@ -157,7 +157,8 @@ fun LibraryScreen(navController: NavHostController) {
                         }
                     }
                     LibraryTab.ALBUMS -> LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
+                        // Adaptive so phones get 2-3 columns and tablets get 4-6 automatically.
+                        columns = GridCells.Adaptive(minSize = 150.dp),
                         contentPadding = PaddingValues(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)

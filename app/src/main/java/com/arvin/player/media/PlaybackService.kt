@@ -102,13 +102,6 @@ class PlaybackService : MediaSessionService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        // If the user swipes the app away while paused (or nothing is queued), tear the service down.
-        if (!player.playWhenReady || player.mediaItemCount == 0) {
-            stopSelf()
-        }
-    }
-
     override fun onDestroy() {
         EqualizerManager.release()
         mediaSession?.run {

@@ -21,7 +21,6 @@ import com.arvin.player.R
 import com.arvin.player.data.model.AppTheme
 import com.arvin.player.data.repository.SUPPORTED_LANGUAGES
 import com.arvin.player.data.repository.SettingsRepository
-import com.arvin.player.media.PlayerController
 import com.arvin.player.ui.icons.ArvinIcons
 import com.arvin.player.ui.navigation.Routes
 import com.arvin.player.util.BiometricAuthenticator
@@ -34,13 +33,11 @@ fun SettingsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val activity = context as? FragmentActivity
     val settings = remember { SettingsRepository.getInstance(context) }
-    val player = remember { PlayerController.getInstance(context) }
     val scope = rememberCoroutineScope()
     val theme by settings.theme.collectAsState(initial = AppTheme.SYSTEM)
     // Language is owned by AppCompat's per-app locales (which actually re-render the UI), not DataStore.
     val language = AppCompatDelegate.getApplicationLocales().get(0)?.language ?: "en"
     val gapless by settings.gaplessEnabled.collectAsState(initial = true)
-    val crossfadeMs by settings.crossfadeMs.collectAsState(initial = 0)
     val customFolders by settings.customFolders.collectAsState(initial = emptySet())
     val hasPin by SecurePinStore.hasPinState.collectAsState()
     var biometricOn by remember { mutableStateOf(SecurePinStore.isBiometricEnabled(context)) }
@@ -113,25 +110,6 @@ fun SettingsScreen(navController: NavHostController) {
                 )
             }
 
-            item {
-                ListItem(headlineContent = { Text(stringResource(R.string.crossfade)) },
-                    supportingContent = { Text(stringResource(R.string.crossfade_description)) })
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Slider(
-                        value = crossfadeMs.toFloat(),
-                        onValueChange = { ms ->
-                            scope.launch { settings.setCrossfadeMs(ms.toInt()) }
-                            player.setCrossfadeMs(ms.toInt())
-                        },
-                        valueRange = 0f..8000f
-                    )
-                    Text(
-                        if (crossfadeMs == 0) stringResource(R.string.crossfade_off) else "${crossfadeMs / 1000.0}s",
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-                Divider(modifier = Modifier.padding(vertical = 12.dp))
-            }
 
             item {
                 ListItem(
