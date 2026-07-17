@@ -1,0 +1,91 @@
+package com.arvin.player
+
+import android.Manifest
+import android.os.Build
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import com.arvin.player.data.model.AppTheme
+import com.arvin.player.data.repository.MusicRepository
+import com.arvin.player.data.repository.SettingsRepository
+import com.arvin.player.media.PlayerController
+import com.arvin.player.ui.navigation.ArvinNavHost
+import com.arvin.player.ui.screens.lock.LockScreen
+import com.arvin.player.ui.theme.ArvinPlayerTheme
+import com.arvin.player.util.PermissionState
+import com.arvin.player.util.SecurePinStore
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+
+/**
+ * Extends FragmentActivity (not plain ComponentActivity) because BiometricPrompt requires a
+ * FragmentActivity or Fragment host — everything else about this Activity is unchanged, Compose
+ * works the same way on top of it.
+ */
+class MainActivity : FragmentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+
+        PermissionState.refresh(this)
+        SecurePinStore.hasPin(this) // primes the reactive hasPinState flow
+
+        val permissions = mutableListOf(PermissionState.audioPermissionName()).apply {
+            if (Build.VERSION.SDK_INT >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        val requestPermissions = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { results ->
+            val granted = results[PermissionState.audioPermissionName()] ?: false
+            PermissionState.setGranted(granted)
+            if (granted) {
+                val repo = MusicRepository.getInstance(applicationContext)
+                lifecycleScope.launch { repo.refreshLibrary() }
+            }
+        }
+
+        setContent {
+            val settingsRepo = remember { SettingsRepository.getInstance(applicationContext) }
+            val theme by settingsRepo.theme.collectAsState(initial = AppTheme.SYSTEM)
+            val hasPin by SecurePinStore.hasPinState.collectAsState()
+            var unlocked by remember { mutableStateOf(false) }
+            val audioGranted by PermissionState.audioPermissionGranted.collectAsState()
+
+            LaunchedEffect(Unit) {
+                requestPermissions.launch(permissions.toTypedArray())
+                val repo = MusicRepository.getInstance(applicationContext)
+                val settings = SettingsRepository.getInstance(applicationContext)
+                val player = PlayerController.getInstance(applicationContext)
+                player.setCrossfadeMs(settings.crossfadeMs.first())
+                if (audioGranted) launch { repo.refreshLibrary() }
+            }
+
+            ArvinPlayerTheme(appTheme = theme) {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    if (hasPin == true && !unlocked) {
+                        LockScreen(onUnlocked = { unlocked = true })
+                    } else {
+                        ArvinNavHost()
+                    }
+                }
+            }
+        }
+    }
+}

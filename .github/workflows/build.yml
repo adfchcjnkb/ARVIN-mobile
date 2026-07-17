@@ -1,0 +1,40 @@
+name: Build APK
+
+# Builds a debug APK automatically whenever you push, and lets you trigger it manually too.
+# This does NOT rely on a committed gradlew wrapper jar (binary file I can't generate offline) —
+# it installs Gradle itself via the official setup-gradle action instead.
+# After a run finishes: Actions tab → the run → "Artifacts" section at the bottom
+# → download arvin-player-debug.apk. No Android Studio or local install needed.
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Build debug APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: arvin-player-debug
+          path: app/build/outputs/apk/debug/app-debug.apk

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="arvin_secure_prefs.xml" />
+        <!-- Everything else (Room DB: playlists/favorites/hidden-songs/EQ presets, and the
+             DataStore settings file: theme/language/crossfade/custom folders) is fine to
+             back up and restore across devices. -->
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="arvin_secure_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>
