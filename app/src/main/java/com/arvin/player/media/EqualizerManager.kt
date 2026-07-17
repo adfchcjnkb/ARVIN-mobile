@@ -65,11 +65,18 @@ object EqualizerManager {
 
     fun setEnabled(on: Boolean) {
         _enabled.value = on
-        equalizer?.enabled = on
+        runCatching { equalizer?.enabled = on }
     }
 
     fun setBandLevel(bandIndex: Short, levelMb: Short) {
-        equalizer?.setBandLevel(bandIndex, levelMb)
+        val eq = equalizer ?: return
+        runCatching {
+            if (bandIndex < eq.numberOfBands) {
+                val range = eq.bandLevelRange
+                val clamped = levelMb.toInt().coerceIn(range[0].toInt(), range[1].toInt()).toShort()
+                eq.setBandLevel(bandIndex, clamped)
+            }
+        }
         refreshBands()
     }
 
@@ -83,25 +90,35 @@ object EqualizerManager {
         val eq = equalizer ?: return
         val nativeBandCount = eq.numberOfBands.toInt()
         if (nativeBandCount == 0) return
-        val mapped = com.arvin.player.util.EqualizerBandMapper.mapToNativeBands(tenBandMb, nativeBandCount)
-        mapped.forEachIndexed { i, level -> eq.setBandLevel(i.toShort(), level) }
+        runCatching {
+            val range = eq.bandLevelRange
+            val mapped = com.arvin.player.util.EqualizerBandMapper.mapToNativeBands(tenBandMb, nativeBandCount)
+            mapped.forEachIndexed { i, level ->
+                val clamped = level.toInt().coerceIn(range[0].toInt(), range[1].toInt()).toShort()
+                eq.setBandLevel(i.toShort(), clamped)
+            }
+        }
         refreshBands()
     }
 
     fun setBassBoost(strength: Int) {
         _bassBoostStrength.value = strength
-        bassBoost?.apply {
-            enabled = strength > 0
-            setStrength(strength.coerceIn(0, 1000).toShort())
+        runCatching {
+            bassBoost?.apply {
+                enabled = strength > 0
+                setStrength(strength.coerceIn(0, 1000).toShort())
+            }
         }
     }
 
     /** "3D / surround" effect — backed by the platform Virtualizer effect. */
     fun setVirtualizerStrength(strength: Int) {
         _virtualizerStrength.value = strength
-        virtualizer?.apply {
-            enabled = strength > 0
-            setStrength(strength.coerceIn(0, 1000).toShort())
+        runCatching {
+            virtualizer?.apply {
+                enabled = strength > 0
+                setStrength(strength.coerceIn(0, 1000).toShort())
+            }
         }
     }
 

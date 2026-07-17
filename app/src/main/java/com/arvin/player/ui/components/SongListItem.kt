@@ -29,6 +29,7 @@ fun SongListItem(
     isPlaying: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onHide: (() -> Unit)? = null,
+    onUnhide: (() -> Unit)? = null,
     playlists: List<PlaylistEntity> = emptyList(),
     onAddToPlaylist: ((Long) -> Unit)? = null,
     onCreatePlaylist: ((String) -> Unit)? = null,
@@ -123,6 +124,13 @@ fun SongListItem(
                         text = { Text(stringResource(R.string.hide_song)) },
                         leadingIcon = { Icon(ArvinIcons.VisibilityOff, contentDescription = null) },
                         onClick = { menuExpanded = false; onHide() }
+                    )
+                }
+                if (onUnhide != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.unhide)) },
+                        leadingIcon = { Icon(ArvinIcons.Visibility, contentDescription = null) },
+                        onClick = { menuExpanded = false; onUnhide() }
                     )
                 }
             }

@@ -34,6 +34,8 @@ class EqualizerViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setEnabled(on: Boolean) = EqualizerManager.setEnabled(on)
     fun setBand(index: Short, level: Short) = EqualizerManager.setBandLevel(index, level)
+    /** Apply all 10 UI band values at once, mapped onto however many native bands the device has. */
+    fun setBands(levels: List<Short>) = EqualizerManager.applyCustomBands(levels)
     fun setBassBoost(strength: Int) = EqualizerManager.setBassBoost(strength)
     fun setVirtualizer(strength: Int) = EqualizerManager.setVirtualizerStrength(strength)
 

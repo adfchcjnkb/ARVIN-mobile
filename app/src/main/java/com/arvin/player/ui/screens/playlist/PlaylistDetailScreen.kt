@@ -38,7 +38,7 @@ fun PlaylistDetailScreen(navController: NavHostController, playlistId: Long) {
     val isPlaying by player.isPlaying.collectAsState()
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),

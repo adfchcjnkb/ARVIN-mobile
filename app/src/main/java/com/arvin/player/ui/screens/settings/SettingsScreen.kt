@@ -9,9 +9,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import com.arvin.player.R
@@ -34,7 +37,8 @@ fun SettingsScreen(navController: NavHostController) {
     val player = remember { PlayerController.getInstance(context) }
     val scope = rememberCoroutineScope()
     val theme by settings.theme.collectAsState(initial = AppTheme.SYSTEM)
-    val language by settings.language.collectAsState(initial = "en")
+    // Language is owned by AppCompat's per-app locales (which actually re-render the UI), not DataStore.
+    val language = AppCompatDelegate.getApplicationLocales().let { if (it.isEmpty) "en" else it.get(0)?.language ?: "en" }
     val gapless by settings.gaplessEnabled.collectAsState(initial = true)
     val crossfadeMs by settings.crossfadeMs.collectAsState(initial = 0)
     val customFolders by settings.customFolders.collectAsState(initial = emptySet())
@@ -62,7 +66,7 @@ fun SettingsScreen(navController: NavHostController) {
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
@@ -104,7 +108,7 @@ fun SettingsScreen(navController: NavHostController) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.gapless_playback)) },
                     trailingContent = {
-                        Switch(checked = gapless, onCheckedChange = { scope.launch { settings.setGapless(it) } })
+                        Switch(checked = gapless, onCheckedChange = { scope.launch { settings.setGapless(it) } }, colors = arvinSwitchColors())
                     }
                 )
             }
@@ -193,7 +197,7 @@ fun SettingsScreen(navController: NavHostController) {
                             Switch(checked = biometricOn, onCheckedChange = {
                                 SecurePinStore.setBiometricEnabled(context, it)
                                 biometricOn = it
-                            })
+                            }, colors = arvinSwitchColors())
                         }
                     )
                 }
@@ -217,8 +221,9 @@ fun SettingsScreen(navController: NavHostController) {
                     ListItem(
                         headlineContent = { Text(lang.nativeName) },
                         modifier = Modifier.clickable {
-                            scope.launch { settings.setLanguage(lang.code) }
                             showLanguageSheet = false
+                            // Actually applies the locale (and recreates the UI in that language + font).
+                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(lang.code))
                         }
                     )
                 }
@@ -268,3 +273,14 @@ fun SettingsScreen(navController: NavHostController) {
         )
     }
 }
+
+/** High-contrast switch colours so on/off state is obvious in both light and dark themes. */
+@Composable
+private fun arvinSwitchColors() = SwitchDefaults.colors(
+    checkedThumbColor = Color.White,
+    checkedTrackColor = MaterialTheme.colorScheme.primary,
+    checkedBorderColor = MaterialTheme.colorScheme.primary,
+    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+    uncheckedBorderColor = MaterialTheme.colorScheme.outline
+)

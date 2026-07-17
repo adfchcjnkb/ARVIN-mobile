@@ -1,6 +1,9 @@
 package com.arvin.player.ui.theme
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
@@ -70,3 +73,27 @@ val AuroraTextBrush: Brush = Brush.linearGradient(
 fun brandVertical(): Brush = Brush.verticalGradient(
     colors = listOf(AuroraViolet, AuroraIndigo)
 )
+
+/**
+ * Subtle aurora-tinted app background. Instead of a flat dark/white fill, it lays down a base colour
+ * plus two soft off-screen colour glows, so translucent "glass" panels have something to frost and
+ * the whole UI stops looking flat. Painted once in the draw phase — effectively free.
+ */
+fun Modifier.screenBackground(isDark: Boolean): Modifier = this.drawBehind {
+    val base = if (isDark) Color(0xFF08080C) else Color(0xFFF6F5FB)
+    drawRect(base)
+    drawRect(
+        Brush.radialGradient(
+            colors = listOf(AuroraViolet.copy(alpha = if (isDark) 0.18f else 0.10f), Color.Transparent),
+            center = Offset(size.width * 0.92f, size.height * 0.02f),
+            radius = size.maxDimension * 0.78f
+        )
+    )
+    drawRect(
+        Brush.radialGradient(
+            colors = listOf(AuroraPink.copy(alpha = if (isDark) 0.12f else 0.07f), Color.Transparent),
+            center = Offset(size.width * 0.04f, size.height * 0.55f),
+            radius = size.maxDimension * 0.6f
+        )
+    )
+}

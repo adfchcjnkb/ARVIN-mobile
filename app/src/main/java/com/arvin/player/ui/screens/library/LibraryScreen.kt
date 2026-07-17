@@ -59,7 +59,7 @@ fun LibraryScreen(navController: NavHostController) {
     var tab by remember { mutableStateOf(LibraryTab.SONGS) }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),

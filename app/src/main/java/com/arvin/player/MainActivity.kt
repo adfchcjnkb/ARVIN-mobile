@@ -6,9 +6,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,8 +15,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.arvin.player.data.model.AppTheme
 import com.arvin.player.data.repository.MusicRepository
@@ -26,17 +25,19 @@ import com.arvin.player.media.PlayerController
 import com.arvin.player.ui.navigation.ArvinNavHost
 import com.arvin.player.ui.screens.lock.LockScreen
 import com.arvin.player.ui.theme.ArvinPlayerTheme
+import com.arvin.player.ui.theme.LocalArvinSkin
+import com.arvin.player.ui.theme.screenBackground
 import com.arvin.player.util.PermissionState
 import com.arvin.player.util.SecurePinStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Extends FragmentActivity (not plain ComponentActivity) because BiometricPrompt requires a
- * FragmentActivity or Fragment host — everything else about this Activity is unchanged, Compose
- * works the same way on top of it.
+ * Extends AppCompatActivity (a FragmentActivity subclass) so that BiometricPrompt has its required
+ * FragmentActivity host AND per-app language via AppCompatDelegate.setApplicationLocales works on
+ * every API level. Compose works the same way on top of it.
  */
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -78,7 +79,7 @@ class MainActivity : FragmentActivity() {
             }
 
             ArvinPlayerTheme(appTheme = theme) {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Box(modifier = Modifier.fillMaxSize().screenBackground(LocalArvinSkin.current.isDark)) {
                     if (hasPin == true && !unlocked) {
                         LockScreen(onUnlocked = { unlocked = true })
                     } else {

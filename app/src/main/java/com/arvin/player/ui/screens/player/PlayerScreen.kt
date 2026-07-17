@@ -54,7 +54,6 @@ import com.arvin.player.R
 import com.arvin.player.data.model.RepeatMode
 import com.arvin.player.media.ConnectionState
 import com.arvin.player.ui.components.AlbumPalette
-import com.arvin.player.ui.components.VisualizerMode
 import com.arvin.player.ui.components.VisualizerView
 import com.arvin.player.ui.components.pressScale
 import com.arvin.player.ui.components.rememberAlbumPalette
@@ -88,7 +87,6 @@ fun PlayerScreen(navController: NavHostController) {
     var showLyrics by remember { mutableStateOf(false) }
     var showSleepTimerSheet by remember { mutableStateOf(false) }
     var showSpeedSheet by remember { mutableStateOf(false) }
-    var visualizerMode by remember { mutableStateOf(VisualizerMode.BARS) }
 
     LaunchedEffect(lastError) {
         lastError?.let {
@@ -109,7 +107,7 @@ fun PlayerScreen(navController: NavHostController) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Box(modifier = Modifier.fillMaxSize()) {
-        PlayerBackdrop(art = if (song != null) albumArtUri else null, palette = palette, isDark = skin.isDark)
+        PlayerBackdrop(palette = palette, isDark = skin.isDark)
 
         Scaffold(
             containerColor = Color.Transparent,
@@ -167,7 +165,11 @@ fun PlayerScreen(navController: NavHostController) {
                     if (showLyrics) {
                         LyricsPanel(lyrics, onColor, mutedColor)
                     } else {
-                        VisualizerView(mode = visualizerMode, modifier = Modifier.padding(vertical = 4.dp))
+                        VisualizerView(
+                            playing = isPlaying,
+                            color = palette.accent,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
                     }
                 }
             }
@@ -326,61 +328,36 @@ fun PlayerScreen(navController: NavHostController) {
     }
 }
 
-/** Full-bleed backdrop: brand/album gradient, a blurred art texture (API 31+), a drifting aurora glow, and a legibility scrim. */
+/**
+ * Full-bleed album-tinted backdrop. Everything is painted once in a single [drawBehind] — a base
+ * vertical gradient, one soft accent glow, and a bottom legibility scrim. No blur, no per-frame
+ * animation, no extra image decode, so it costs almost nothing and stays smooth on every device.
+ * It only repaints when the album colours change (i.e. on track change).
+ */
 @Composable
-private fun PlayerBackdrop(art: Any?, palette: AlbumPalette, isDark: Boolean) {
+private fun PlayerBackdrop(palette: AlbumPalette, isDark: Boolean) {
+    val glowAlpha = if (isDark) 0.20f else 0.12f
+    val scrim = if (isDark) Color.Black else Color.White
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(palette.top, palette.bottom)))
-    ) {
-        if (Build.VERSION.SDK_INT >= 31 && art != null) {
-            AsyncImage(
-                model = art,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(90.dp)
-                    .graphicsLayer { alpha = if (isDark) 0.45f else 0.30f }
-            )
-        }
-        // Slowly drifting soft glow for a little life — read in the draw phase so it doesn't thrash composition.
-        val transition = rememberInfiniteTransition(label = "glow")
-        val drift by transition.animateFloat(
-            initialValue = 0f, targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(9000), androidx.compose.animation.core.RepeatMode.Reverse),
-            label = "drift"
-        )
-        val glowAlpha = if (isDark) 0.22f else 0.14f
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    drawRect(
-                        Brush.radialGradient(
-                            colors = listOf(palette.accent.copy(alpha = glowAlpha), Color.Transparent),
-                            center = Offset(
-                                x = size.width * (0.25f + drift * 0.5f),
-                                y = size.height * (0.35f + drift * 0.25f)
-                            ),
-                            radius = size.minDimension * 0.95f
-                        )
-                    )
-                }
-        )
-        // Bottom scrim so the controls stay readable regardless of art brightness.
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.55f to Color.Transparent,
-                        1f to (if (isDark) Color.Black else Color.White).copy(alpha = 0.35f)
+            .drawBehind {
+                drawRect(Brush.verticalGradient(listOf(palette.top, palette.bottom)))
+                drawRect(
+                    Brush.radialGradient(
+                        colors = listOf(palette.accent.copy(alpha = glowAlpha), Color.Transparent),
+                        center = Offset(size.width * 0.28f, size.height * 0.24f),
+                        radius = size.minDimension * 0.95f
                     )
                 )
-        )
-    }
+                drawRect(
+                    Brush.verticalGradient(
+                        0.5f to Color.Transparent,
+                        1f to scrim.copy(alpha = 0.35f)
+                    )
+                )
+            }
+    )
 }
 
 @Composable

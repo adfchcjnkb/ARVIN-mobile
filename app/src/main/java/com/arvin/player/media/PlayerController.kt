@@ -173,6 +173,7 @@ class PlayerController private constructor(context: Context) {
         } else {
             android.net.Uri.fromFile(java.io.File(song.path))
         }
+        val artworkUri = android.net.Uri.parse("content://media/external/audio/albumart/${song.albumId}")
         return MediaItem.Builder()
             .setMediaId(song.id.toString())
             .setUri(uri)
@@ -181,6 +182,7 @@ class PlayerController private constructor(context: Context) {
                     .setTitle(song.title)
                     .setArtist(song.artist)
                     .setAlbumTitle(song.album)
+                    .setArtworkUri(artworkUri) // shows on the notification & system lock screen
                     .setExtras(android.os.Bundle().apply { putLong("albumId", song.albumId) })
                     .build()
             )

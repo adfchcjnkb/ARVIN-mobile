@@ -295,19 +295,29 @@ object ArvinIcons {
     val Visibility: ImageVector by lazy {
         build("Visibility") {
             stroke {
-                moveTo(3f, 12f); curveTo(6f, 7f, 18f, 7f, 21f, 12f); curveTo(18f, 17f, 6f, 17f, 3f, 12f); close()
+                moveTo(2.5f, 12f)
+                curveTo(5f, 7.2f, 8.4f, 5.8f, 12f, 5.8f)
+                curveTo(15.6f, 5.8f, 19f, 7.2f, 21.5f, 12f)
+                curveTo(19f, 16.8f, 15.6f, 18.2f, 12f, 18.2f)
+                curveTo(8.4f, 18.2f, 5f, 16.8f, 2.5f, 12f)
+                close()
+                circle(12f, 12f, 3.1f)
             }
-            solid { circle(12f, 12f, 2.5f) }
         }
     }
 
     val VisibilityOff: ImageVector by lazy {
         build("VisibilityOff") {
             stroke {
-                moveTo(3f, 3f); lineTo(21f, 21f)
-                moveTo(10.6f, 6.2f); arcTo(9f, 9f, 0f, false, true, 12f, 6f); curveToRelative(5f, 0f, 8.5f, 6f, 8.5f, 6f); arcToRelative(13f, 13f, 0f, false, true, -2.2f, 2.9f)
-                moveTo(6.2f, 7.8f); arcTo(13f, 13f, 0f, false, false, 3.5f, 12f); reflectiveCurveToRelative(3.5f, 6f, 8.5f, 6f); arcToRelative(9f, 9f, 0f, false, false, 2.4f, -0.4f)
-                moveTo(9.5f, 9.5f); arcTo(3f, 3f, 0f, false, false, 12f, 15f); arcToRelative(3f, 3f, 0f, false, false, 2.5f, -1.3f)
+                moveTo(2.5f, 12f)
+                curveTo(5f, 7.2f, 8.4f, 5.8f, 12f, 5.8f)
+                curveTo(15.6f, 5.8f, 19f, 7.2f, 21.5f, 12f)
+                curveTo(19f, 16.8f, 15.6f, 18.2f, 12f, 18.2f)
+                curveTo(8.4f, 18.2f, 5f, 16.8f, 2.5f, 12f)
+                close()
+                circle(12f, 12f, 3.1f)
+                moveTo(4.5f, 4.5f)
+                lineTo(19.5f, 19.5f)
             }
         }
     }
