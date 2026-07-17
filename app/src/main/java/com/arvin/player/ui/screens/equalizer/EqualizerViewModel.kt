@@ -10,9 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /** Ready-made presets beyond whatever the device's native Equalizer effect exposes. */
-val CUSTOM_PRESETS: Map<String, List<Short>> = mapOf
-    (
-    "Flat" to List(10) { 0 },
+val CUSTOM_PRESETS: Map<String, List<Short>> = mapOf(
+    "Flat" to List(10) { 0.toShort() },
     "Bass Boost" to listOf(600, 500, 400, 200, 0, 0, 0, 0, 0, 0),
     "Treble Boost" to listOf(0, 0, 0, 0, 0, 100, 250, 400, 500, 600),
     "Vocal" to listOf(-200, -100, 0, 200, 400, 400, 200, 0, -100, -200),
