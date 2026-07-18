@@ -2,6 +2,7 @@ package com.arvin.player.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -20,6 +21,7 @@ import com.arvin.player.data.model.Song
 import com.arvin.player.ui.icons.ArvinIcons
 import com.arvin.player.util.formatDuration
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun SongListItem(
     song: Song,
@@ -33,6 +35,12 @@ fun SongListItem(
     playlists: List<PlaylistEntity> = emptyList(),
     onAddToPlaylist: ((Long) -> Unit)? = null,
     onCreatePlaylist: ((String) -> Unit)? = null,
+    onEditMetadata: (() -> Unit)? = null,
+    onRemoveFromPlaylist: (() -> Unit)? = null,
+    // Long-press multi-select (used by the library's "select several songs to hide at once" mode).
+    selectionMode: Boolean = false,
+    isSelected: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     // legacy no-op fallback so older call sites without the richer menu still compile
     onMoreClick: (() -> Unit)? = null
 ) {
@@ -42,6 +50,7 @@ fun SongListItem(
 
     val accent = MaterialTheme.colorScheme.primary
     val titleColor = if (isCurrent) accent else MaterialTheme.colorScheme.onSurface
+    val artSize = com.arvin.player.ui.theme.AdaptiveSize.dp(54)
 
     Row(
         modifier = Modifier
@@ -49,7 +58,10 @@ fun SongListItem(
             .padding(horizontal = 8.dp, vertical = 3.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(if (isCurrent) accent.copy(alpha = 0.12f) else Color.Transparent)
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -59,14 +71,14 @@ fun SongListItem(
                 model = artUri,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(54.dp)
+                    .size(artSize)
                     .clip(RoundedCornerShape(15.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             )
-            if (isCurrent) {
+            if (isCurrent && !selectionMode) {
                 Box(
                     modifier = Modifier
-                        .size(54.dp)
+                        .size(artSize)
                         .clip(RoundedCornerShape(15.dp))
                         .background(Color.Black.copy(alpha = 0.45f)),
                     contentAlignment = Alignment.Center
@@ -75,6 +87,21 @@ fun SongListItem(
                         color = Color.White,
                         playing = isPlaying,
                         modifier = Modifier.size(width = 20.dp, height = 16.dp)
+                    )
+                }
+            }
+            if (selectionMode) {
+                Box(
+                    modifier = Modifier
+                        .size(artSize)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(Color.Black.copy(alpha = 0.35f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        if (isSelected) ArvinIcons.CheckCircle else ArvinIcons.CircleOutline,
+                        contentDescription = null,
+                        tint = if (isSelected) accent else Color.White
                     )
                 }
             }
@@ -97,6 +124,8 @@ fun SongListItem(
             )
         }
 
+        if (selectionMode) return@Row
+
         if (onToggleFavorite != null) {
             IconButton(onClick = onToggleFavorite, modifier = Modifier.pressScale()) {
                 Icon(
@@ -108,7 +137,7 @@ fun SongListItem(
         }
 
         Box {
-            IconButton(onClick = { if (onMoreClick != null) onMoreClick() else menuExpanded = true }) {
+            IconButton(onClick = { menuExpanded = true }, modifier = Modifier.pressScale()) {
                 Icon(ArvinIcons.MoreVert, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
@@ -117,6 +146,13 @@ fun SongListItem(
                         text = { Text(stringResource(R.string.add_to_playlist)) },
                         leadingIcon = { Icon(ArvinIcons.PlaylistAdd, contentDescription = null) },
                         onClick = { menuExpanded = false; showAddToPlaylist = true }
+                    )
+                }
+                if (onEditMetadata != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.edit_info)) },
+                        leadingIcon = { Icon(ArvinIcons.Edit, contentDescription = null) },
+                        onClick = { menuExpanded = false; onEditMetadata() }
                     )
                 }
                 if (onHide != null) {
@@ -131,6 +167,20 @@ fun SongListItem(
                         text = { Text(stringResource(R.string.unhide)) },
                         leadingIcon = { Icon(ArvinIcons.Visibility, contentDescription = null) },
                         onClick = { menuExpanded = false; onUnhide() }
+                    )
+                }
+                if (onRemoveFromPlaylist != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.remove)) },
+                        leadingIcon = { Icon(ArvinIcons.Delete, contentDescription = null) },
+                        onClick = { menuExpanded = false; onRemoveFromPlaylist() }
+                    )
+                }
+                if (onMoreClick != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.remove)) },
+                        leadingIcon = { Icon(ArvinIcons.Delete, contentDescription = null) },
+                        onClick = { menuExpanded = false; onMoreClick() }
                     )
                 }
             }

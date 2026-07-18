@@ -21,11 +21,17 @@ class PlaylistViewModel(app: Application) : AndroidViewModel(app) {
         repo.playlistDao.getAllPlaylists().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun createPlaylist(name: String) {
-        viewModelScope.launch { repo.createPlaylist(name) }
+        viewModelScope.launch {
+            repo.createPlaylist(name)
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_playlist_created)
+        }
     }
 
     fun deletePlaylist(playlist: PlaylistEntity) {
-        viewModelScope.launch { repo.playlistDao.deletePlaylist(playlist) }
+        viewModelScope.launch {
+            repo.playlistDao.deletePlaylist(playlist)
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_playlist_deleted)
+        }
     }
 
     fun songsFor(playlistId: Long): StateFlow<List<Song>> =
@@ -34,7 +40,17 @@ class PlaylistViewModel(app: Application) : AndroidViewModel(app) {
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun addSong(playlistId: Long, songId: Long) {
-        viewModelScope.launch { repo.addToPlaylist(playlistId, songId) }
+        viewModelScope.launch {
+            repo.addToPlaylist(playlistId, songId)
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_added_to_playlist)
+        }
+    }
+
+    fun addSongs(playlistId: Long, songIds: List<Long>) {
+        viewModelScope.launch {
+            songIds.forEach { repo.addToPlaylist(playlistId, it) }
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_added_to_playlist)
+        }
     }
 
     fun removeSong(playlistId: Long, songId: Long) {
@@ -43,5 +59,10 @@ class PlaylistViewModel(app: Application) : AndroidViewModel(app) {
 
     fun playPlaylist(songs: List<Song>, startIndex: Int = 0) {
         if (songs.isNotEmpty()) player.playQueue(songs, startIndex)
+    }
+
+    /** Called after the edit-metadata dialog saves, so titles/art refresh without a manual pull-to-refresh. */
+    fun refreshLibrary() {
+        viewModelScope.launch { repo.refreshLibrary() }
     }
 }

@@ -73,6 +73,7 @@ class PlaybackService : MediaSessionService() {
     private fun attachEqualizer(audioSessionId: Int) {
         if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return
         EqualizerManager.attach(audioSessionId)
+        AudioVisualizerEngine.attach(audioSessionId)
     }
 
     private fun pushWidgetUpdate() {
@@ -104,6 +105,7 @@ class PlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         EqualizerManager.release()
+        AudioVisualizerEngine.release()
         mediaSession?.run {
             player.release()
             release()

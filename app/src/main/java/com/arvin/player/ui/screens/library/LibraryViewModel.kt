@@ -50,21 +50,38 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val isFav = favoriteIds.value.contains(songId)
             repo.toggleFavorite(songId, !isFav)
+            com.arvin.player.util.AppNotifier.notify(
+                if (!isFav) com.arvin.player.R.string.notif_favorite_added else com.arvin.player.R.string.notif_favorite_removed
+            )
         }
     }
 
     fun hideSong(songId: Long) {
-        viewModelScope.launch { repo.hideSong(songId) }
+        viewModelScope.launch {
+            repo.hideSong(songId)
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_song_hidden)
+        }
+    }
+
+    fun hideSongs(songIds: List<Long>) {
+        viewModelScope.launch {
+            songIds.forEach { repo.hideSong(it) }
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_song_hidden)
+        }
     }
 
     fun addToPlaylist(playlistId: Long, songId: Long) {
-        viewModelScope.launch { repo.addToPlaylist(playlistId, songId) }
+        viewModelScope.launch {
+            repo.addToPlaylist(playlistId, songId)
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_added_to_playlist)
+        }
     }
 
     fun createPlaylistAndAdd(name: String, songId: Long) {
         viewModelScope.launch {
             val id = repo.createPlaylist(name)
             repo.addToPlaylist(id, songId)
+            com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_playlist_created)
         }
     }
 }

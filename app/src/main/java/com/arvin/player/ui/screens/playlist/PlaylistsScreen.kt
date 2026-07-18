@@ -14,13 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.arvin.player.R
+import com.arvin.player.data.local.PlaylistEntity
+import com.arvin.player.media.PlayerController
 import com.arvin.player.ui.components.GlassCard
+import com.arvin.player.ui.components.MiniPlayer
 import com.arvin.player.ui.components.pressScale
 import com.arvin.player.ui.icons.ArvinIcons
 import com.arvin.player.ui.navigation.Routes
@@ -30,8 +34,11 @@ import com.arvin.player.ui.theme.AuroraButtonBrush
 @Composable
 fun PlaylistsScreen(navController: NavHostController) {
     val vm: PlaylistViewModel = viewModel()
+    val context = LocalContext.current
+    val player = remember { PlayerController.getInstance(context) }
     val playlists by vm.playlists.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
+    var playlistPendingDelete by remember { mutableStateOf<PlaylistEntity?>(null) }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -59,22 +66,58 @@ fun PlaylistsScreen(navController: NavHostController) {
             ) {
                 Icon(ArvinIcons.Add, contentDescription = stringResource(R.string.new_playlist), tint = Color.White, modifier = Modifier.size(28.dp))
             }
-        }
+        },
+        bottomBar = { MiniPlayer(player) { navController.navigate(Routes.PLAYER) } }
     ) { padding ->
-        if (playlists.isEmpty()) {
-            Box(modifier = Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    stringResource(R.string.playlists),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        LazyColumn(
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item {
+                GlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pressScale(0.98f)
+                        .clickable { navController.navigate(Routes.FAVORITES) },
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFE0245E)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(ArvinIcons.HeartFilled, contentDescription = null, tint = Color.White)
+                        }
+                        Spacer(Modifier.width(14.dp))
+                        Text(
+                            stringResource(R.string.liked_songs),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.padding(padding).fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+            if (playlists.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.playlists),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
                 items(playlists, key = { it.id }) { playlist ->
                     GlassCard(
                         modifier = Modifier
@@ -105,7 +148,7 @@ fun PlaylistsScreen(navController: NavHostController) {
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f)
                             )
-                            IconButton(onClick = { vm.deletePlaylist(playlist) }, modifier = Modifier.pressScale()) {
+                            IconButton(onClick = { playlistPendingDelete = playlist }, modifier = Modifier.pressScale()) {
                                 Icon(ArvinIcons.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
@@ -131,6 +174,23 @@ fun PlaylistsScreen(navController: NavHostController) {
             },
             dismissButton = {
                 TextButton(onClick = { showCreateDialog = false }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+
+    playlistPendingDelete?.let { playlist ->
+        AlertDialog(
+            onDismissRequest = { playlistPendingDelete = null },
+            title = { Text(stringResource(R.string.delete_playlist_title)) },
+            text = { Text(stringResource(R.string.delete_playlist_body, playlist.name)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.deletePlaylist(playlist)
+                    playlistPendingDelete = null
+                }) { Text(stringResource(R.string.remove), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { playlistPendingDelete = null }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

@@ -29,9 +29,20 @@ object SleepTimerManager {
         dispatcher: CoroutineDispatcher = Dispatchers.Default,
         tickMs: Long = 1000L,
         onFinish: () -> Unit
+    ) = startSeconds(minutes * 60, scope, dispatcher, tickMs, onFinish)
+
+    /** Same timer, but takes a raw second count so the user can dial in an exact custom duration
+     *  (e.g. 7 minutes 30 seconds) rather than only the fixed preset minute buttons. */
+    fun startSeconds(
+        totalSeconds: Int,
+        scope: CoroutineScope,
+        dispatcher: CoroutineDispatcher = Dispatchers.Default,
+        tickMs: Long = 1000L,
+        onFinish: () -> Unit
     ) {
         cancel()
-        var remaining = minutes * 60_000L
+        if (totalSeconds <= 0) return
+        var remaining = totalSeconds * 1000L
         _remainingMs.value = remaining
         _isActive.value = true
         job = scope.launch(dispatcher) {

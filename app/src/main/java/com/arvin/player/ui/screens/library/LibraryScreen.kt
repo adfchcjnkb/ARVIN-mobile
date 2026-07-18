@@ -3,9 +3,15 @@ package com.arvin.player.ui.screens.library
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,9 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,6 +48,7 @@ import com.arvin.player.ui.navigation.Routes
 import com.arvin.player.ui.theme.AuroraButtonBrush
 import com.arvin.player.ui.theme.LocalArvinSkin
 import com.arvin.player.util.PermissionState
+import kotlin.math.abs
 
 private enum class LibraryTab { SONGS, ALBUMS, ARTISTS, GENRES }
 
@@ -57,10 +66,38 @@ fun LibraryScreen(navController: NavHostController) {
     val isPlaying by player.isPlaying.collectAsState()
     val audioGranted by PermissionState.audioPermissionGranted.collectAsState()
     var tab by remember { mutableStateOf(LibraryTab.SONGS) }
+    var songBeingEdited by remember { mutableStateOf<com.arvin.player.data.model.Song?>(null) }
+    var selectionMode by remember { mutableStateOf(false) }
+    val selectedIds = remember { mutableStateListOf<Long>() }
+    var showBatchHideConfirm by remember { mutableStateOf(false) }
+
+    fun exitSelection() {
+        selectionMode = false
+        selectedIds.clear()
+    }
 
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
+            if (selectionMode) {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    title = { Text(stringResource(R.string.songs_count, selectedIds.size)) },
+                    navigationIcon = {
+                        IconButton(onClick = { exitSelection() }, modifier = Modifier.pressScale()) {
+                            Icon(ArvinIcons.ArrowBack, contentDescription = stringResource(R.string.cancel))
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = { if (selectedIds.isNotEmpty()) showBatchHideConfirm = true },
+                            modifier = Modifier.pressScale()
+                        ) {
+                            Icon(ArvinIcons.VisibilityOff, contentDescription = stringResource(R.string.hide_song))
+                        }
+                    }
+                )
+            } else {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 title = {
@@ -84,6 +121,7 @@ fun LibraryScreen(navController: NavHostController) {
                     }
                 }
             )
+            }
         },
         floatingActionButton = {
             if (audioGranted && songs.isNotEmpty()) {
@@ -139,64 +177,135 @@ fun LibraryScreen(navController: NavHostController) {
                     return@Column
                 }
 
-                when (tab) {
-                    LibraryTab.SONGS -> LazyColumn(contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp)) {
-                        items(songs, key = { it.id }) { song ->
-                            SongListItem(
-                                song = song,
-                                onClick = { vm.playSong(song) },
-                                isFavorite = favoriteIds.contains(song.id),
-                                isCurrent = currentSong?.id == song.id,
-                                isPlaying = isPlaying && currentSong?.id == song.id,
-                                onToggleFavorite = { vm.toggleFavorite(song.id) },
-                                onHide = { vm.hideSong(song.id) },
-                                playlists = playlists,
-                                onAddToPlaylist = { playlistId -> vm.addToPlaylist(playlistId, song.id) },
-                                onCreatePlaylist = { name -> vm.createPlaylistAndAdd(name, song.id) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            var dragAccum = 0f
+                            detectHorizontalDragGestures(
+                                onDragEnd = {
+                                    if (abs(dragAccum) > 80f) {
+                                        val dir = if (dragAccum < 0) 1 else -1
+                                        val newIndex = (tab.ordinal + dir).coerceIn(0, LibraryTab.entries.size - 1)
+                                        tab = LibraryTab.entries[newIndex]
+                                    }
+                                    dragAccum = 0f
+                                },
+                                onDragCancel = { dragAccum = 0f },
+                                onHorizontalDrag = { _, delta -> dragAccum += delta }
                             )
                         }
-                    }
-                    LibraryTab.ALBUMS -> LazyVerticalGrid(
-                        // Adaptive so phones get 2-3 columns and tablets get 4-6 automatically.
-                        columns = GridCells.Adaptive(minSize = 150.dp),
-                        contentPadding = PaddingValues(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(vm.albums(), key = { it.id }) { album ->
-                            AlbumCard(album = album, onClick = {
-                                val albumSongs = songs.filter { it.album == album.name }
-                                if (albumSongs.isNotEmpty()) vm.playSong(albumSongs.first(), albumSongs)
-                            })
-                        }
-                    }
-                    LibraryTab.ARTISTS -> LazyColumn(contentPadding = PaddingValues(vertical = 6.dp)) {
-                        items(vm.artists()) { artist ->
-                            RoundRow(
-                                title = artist.name,
-                                subtitle = "${artist.albumCount} · ${artist.songCount}",
-                                onClick = {
-                                    val artistSongs = songs.filter { it.artist == artist.name }
-                                    if (artistSongs.isNotEmpty()) vm.playSong(artistSongs.first(), artistSongs)
+                ) {
+                    AnimatedContent(
+                        targetState = tab,
+                        transitionSpec = {
+                            val forward = targetState.ordinal > initialState.ordinal
+                            (slideInHorizontally(tween(260)) { w -> if (forward) w else -w })
+                                .togetherWith(slideOutHorizontally(tween(260)) { w -> if (forward) -w else w })
+                        },
+                        label = "libraryTab"
+                    ) { currentTab ->
+                        when (currentTab) {
+                            LibraryTab.SONGS -> LazyColumn(contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp)) {
+                                items(songs, key = { it.id }) { song ->
+                                    SongListItem(
+                                        song = song,
+                                        onClick = {
+                                            if (selectionMode) {
+                                                if (selectedIds.contains(song.id)) selectedIds.remove(song.id) else selectedIds.add(song.id)
+                                            } else {
+                                                vm.playSong(song)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!selectionMode) {
+                                                selectionMode = true
+                                                selectedIds.add(song.id)
+                                            }
+                                        },
+                                        selectionMode = selectionMode,
+                                        isSelected = selectedIds.contains(song.id),
+                                        isFavorite = favoriteIds.contains(song.id),
+                                        isCurrent = currentSong?.id == song.id,
+                                        isPlaying = isPlaying && currentSong?.id == song.id,
+                                        onToggleFavorite = { vm.toggleFavorite(song.id) },
+                                        onHide = { vm.hideSong(song.id) },
+                                        playlists = playlists,
+                                        onAddToPlaylist = { playlistId -> vm.addToPlaylist(playlistId, song.id) },
+                                        onCreatePlaylist = { name -> vm.createPlaylistAndAdd(name, song.id) },
+                                        onEditMetadata = { songBeingEdited = song }
+                                    )
                                 }
-                            )
-                        }
-                    }
-                    LibraryTab.GENRES -> LazyColumn(contentPadding = PaddingValues(vertical = 6.dp)) {
-                        items(vm.genres()) { genre ->
-                            RoundRow(
-                                title = genre,
-                                subtitle = null,
-                                onClick = {
-                                    val genreSongs = songs.filter { it.genre == genre }
-                                    if (genreSongs.isNotEmpty()) vm.playSong(genreSongs.first(), genreSongs)
+                            }
+                            LibraryTab.ALBUMS -> LazyVerticalGrid(
+                                // Adaptive so phones get 2-3 columns and tablets get 4-6 automatically.
+                                columns = GridCells.Adaptive(minSize = 150.dp),
+                                contentPadding = PaddingValues(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(vm.albums(), key = { it.id }) { album ->
+                                    AlbumCard(album = album, onClick = {
+                                        val albumSongs = songs.filter { it.album == album.name }
+                                        if (albumSongs.isNotEmpty()) vm.playSong(albumSongs.first(), albumSongs)
+                                    })
                                 }
-                            )
+                            }
+                            LibraryTab.ARTISTS -> LazyColumn(contentPadding = PaddingValues(vertical = 6.dp)) {
+                                items(vm.artists()) { artist ->
+                                    RoundRow(
+                                        title = artist.name,
+                                        subtitle = "${artist.albumCount} · ${artist.songCount}",
+                                        onClick = {
+                                            val artistSongs = songs.filter { it.artist == artist.name }
+                                            if (artistSongs.isNotEmpty()) vm.playSong(artistSongs.first(), artistSongs)
+                                        }
+                                    )
+                                }
+                            }
+                            LibraryTab.GENRES -> LazyColumn(contentPadding = PaddingValues(vertical = 6.dp)) {
+                                items(vm.genres()) { genre ->
+                                    RoundRow(
+                                        title = genre,
+                                        subtitle = null,
+                                        onClick = {
+                                            val genreSongs = songs.filter { it.genre == genre }
+                                            if (genreSongs.isNotEmpty()) vm.playSong(genreSongs.first(), genreSongs)
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    songBeingEdited?.let { song ->
+        com.arvin.player.ui.components.EditMetadataDialog(
+            song = song,
+            onDismiss = { songBeingEdited = null },
+            onSaved = { vm.refresh() }
+        )
+    }
+
+    if (showBatchHideConfirm) {
+        AlertDialog(
+            onDismissRequest = { showBatchHideConfirm = false },
+            title = { Text(stringResource(R.string.hide_song)) },
+            text = { Text(stringResource(R.string.songs_count, selectedIds.size)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.hideSongs(selectedIds.toList())
+                    showBatchHideConfirm = false
+                    exitSelection()
+                }) { Text(stringResource(R.string.hide_song)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBatchHideConfirm = false }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
     }
 }
 
@@ -223,10 +332,17 @@ private fun SegmentedTabs(tabs: List<String>, selected: Int, onSelect: (Int) -> 
                     .clip(CircleShape)
                     .then(if (isSel) Modifier.background(AuroraButtonBrush) else Modifier)
                     .clickable { onSelect(i) }
-                    .padding(vertical = 9.dp),
+                    .padding(horizontal = 4.dp, vertical = 9.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = textColor, maxLines = 1)
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

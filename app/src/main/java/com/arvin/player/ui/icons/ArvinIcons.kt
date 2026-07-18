@@ -6,8 +6,12 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CreateNewFolder
 import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.HideImage
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Fingerprint
@@ -18,10 +22,12 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -68,4 +74,10 @@ object ArvinIcons {
     val Folder: ImageVector get() = Icons.Rounded.CreateNewFolder
     val Speed: ImageVector get() = Icons.Rounded.Speed
     val PlaylistAdd: ImageVector get() = Icons.AutoMirrored.Rounded.PlaylistAdd
+    val Share: ImageVector get() = Icons.Rounded.Share
+    val Edit: ImageVector get() = Icons.Rounded.Edit
+    val Image: ImageVector get() = Icons.Rounded.Image
+    val HideImage: ImageVector get() = Icons.Rounded.HideImage
+    val CheckCircle: ImageVector get() = Icons.Rounded.CheckCircle
+    val CircleOutline: ImageVector get() = Icons.Rounded.RadioButtonUnchecked
 }

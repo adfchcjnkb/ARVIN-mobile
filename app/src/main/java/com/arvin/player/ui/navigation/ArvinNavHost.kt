@@ -30,6 +30,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val SEARCH = "search"
     const val HIDDEN_SONGS = "hidden_songs"
+    const val FAVORITES = "favorites"
 
     fun playlistDetail(id: Long) = "playlist_detail/$id"
 }
@@ -65,5 +66,6 @@ fun ArvinNavHost(navController: NavHostController = rememberNavController()) {
         composable(Routes.SETTINGS) { SettingsScreen(navController) }
         composable(Routes.SEARCH) { SearchScreen(navController) }
         composable(Routes.HIDDEN_SONGS) { HiddenSongsScreen(navController) }
+        composable(Routes.FAVORITES) { com.arvin.player.ui.screens.favorites.FavoritesScreen(navController) }
     }
 }

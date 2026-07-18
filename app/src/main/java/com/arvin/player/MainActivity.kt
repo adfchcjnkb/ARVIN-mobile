@@ -22,6 +22,7 @@ import com.arvin.player.data.model.AppTheme
 import com.arvin.player.data.repository.MusicRepository
 import com.arvin.player.data.repository.SettingsRepository
 import com.arvin.player.media.PlayerController
+import com.arvin.player.ui.components.AppNoticeHost
 import com.arvin.player.ui.navigation.ArvinNavHost
 import com.arvin.player.ui.screens.lock.LockScreen
 import com.arvin.player.ui.theme.ArvinPlayerTheme
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         PermissionState.refresh(this)
         SecurePinStore.hasPin(this) // primes the reactive hasPinState flow
 
-        val permissions = mutableListOf(PermissionState.audioPermissionName()).apply {
+        val permissions = mutableListOf(PermissionState.audioPermissionName(), Manifest.permission.RECORD_AUDIO).apply {
             if (Build.VERSION.SDK_INT >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
         }
 
@@ -84,6 +85,7 @@ class MainActivity : AppCompatActivity() {
                         LockScreen(onUnlocked = { unlocked = true })
                     } else {
                         ArvinNavHost()
+                        AppNoticeHost()
                     }
                 }
             }

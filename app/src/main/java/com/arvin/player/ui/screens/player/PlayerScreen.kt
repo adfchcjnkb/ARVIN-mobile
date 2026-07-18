@@ -19,8 +19,10 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -82,11 +84,14 @@ fun PlayerScreen(navController: NavHostController) {
     val lastError by player.lastError.collectAsState()
     val favoriteIds by vm.favoriteIds.collectAsState()
     val lyrics by vm.lyrics.collectAsState()
+    val sleepTimerActive by com.arvin.player.util.SleepTimerManager.isActive.collectAsState()
+    val sleepTimerRemainingMs by com.arvin.player.util.SleepTimerManager.remainingMs.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     var showLyrics by remember { mutableStateOf(false) }
     var showSleepTimerSheet by remember { mutableStateOf(false) }
     var showSpeedSheet by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(lastError) {
         lastError?.let {
@@ -141,6 +146,11 @@ fun PlayerScreen(navController: NavHostController) {
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(end = 8.dp)
                             )
+                        }
+                        if (song != null) {
+                            IconButton(onClick = { showEditDialog = true }, modifier = Modifier.pressScale()) {
+                                Icon(ArvinIcons.Edit, contentDescription = stringResource(R.string.edit_info))
+                            }
                         }
                         IconButton(onClick = { navController.navigate(Routes.EQUALIZER) }, modifier = Modifier.pressScale()) {
                             Icon(ArvinIcons.Tune, contentDescription = stringResource(R.string.equalizer))
@@ -219,6 +229,7 @@ fun PlayerScreen(navController: NavHostController) {
                     // Transport controls are pinned LTR: previous is always on the left and next on the
                     // right, even under Persian/Arabic RTL — matching how Spotify/Apple Music behave.
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        val transportScale = com.arvin.player.ui.theme.AdaptiveSize.scale()
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -227,17 +238,18 @@ fun PlayerScreen(navController: NavHostController) {
                             IconButton(onClick = { player.toggleShuffle() }, modifier = Modifier.pressScale()) {
                                 Icon(
                                     ArvinIcons.Shuffle, contentDescription = null,
-                                    tint = if (shuffleOn) palette.accent else mutedColor
+                                    tint = if (shuffleOn) palette.accent else mutedColor,
+                                    modifier = Modifier.size(24.dp * transportScale)
                                 )
                             }
                             IconButton(onClick = { player.skipPrevious() }, modifier = Modifier.pressScale()) {
-                                Icon(ArvinIcons.SkipPrevious, contentDescription = stringResource(R.string.skip_previous), tint = onColor, modifier = Modifier.size(38.dp))
+                                Icon(ArvinIcons.SkipPrevious, contentDescription = stringResource(R.string.skip_previous), tint = onColor, modifier = Modifier.size(38.dp * transportScale))
                             }
 
                             PlayButton(isPlaying = isPlaying, accent = palette.accent) { player.togglePlayPause() }
 
                             IconButton(onClick = { player.skipNext() }, modifier = Modifier.pressScale()) {
-                                Icon(ArvinIcons.SkipNext, contentDescription = stringResource(R.string.skip_next), tint = onColor, modifier = Modifier.size(38.dp))
+                                Icon(ArvinIcons.SkipNext, contentDescription = stringResource(R.string.skip_next), tint = onColor, modifier = Modifier.size(38.dp * transportScale))
                             }
                             IconButton(onClick = { player.cycleRepeatMode() }, modifier = Modifier.pressScale()) {
                                 Icon(
@@ -246,7 +258,8 @@ fun PlayerScreen(navController: NavHostController) {
                                         else -> ArvinIcons.Repeat
                                     },
                                     contentDescription = null,
-                                    tint = if (repeatMode != RepeatMode.OFF) palette.accent else mutedColor
+                                    tint = if (repeatMode != RepeatMode.OFF) palette.accent else mutedColor,
+                                    modifier = Modifier.size(24.dp * transportScale)
                                 )
                             }
                         }
@@ -278,15 +291,24 @@ fun PlayerScreen(navController: NavHostController) {
                             )
                         }
                         PillButton(
-                            selected = false,
+                            selected = sleepTimerActive,
                             accent = palette.accent,
                             onColor = onColor,
                             onClick = { showSleepTimerSheet = true }
                         ) {
-                            Icon(ArvinIcons.Bedtime, contentDescription = stringResource(R.string.sleep_timer), modifier = Modifier.size(18.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(ArvinIcons.Bedtime, contentDescription = stringResource(R.string.sleep_timer), modifier = Modifier.size(18.dp))
+                                if (sleepTimerActive) {
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        com.arvin.player.util.formatTimerLabel((sleepTimerRemainingMs / 1000).toInt()),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
+                            }
                         }
                         PillButton(
-                            selected = false,
+                            selected = speed != 1.0f,
                             accent = palette.accent,
                             onColor = onColor,
                             onClick = { showSpeedSheet = true }
@@ -297,26 +319,49 @@ fun PlayerScreen(navController: NavHostController) {
                 }
             }
 
-            if (isLandscape) {
-                Row(modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 24.dp)) {
-                    artAndVisual(Modifier.weight(1f))
-                    Spacer(Modifier.width(24.dp))
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        controls(Modifier.fillMaxWidth())
+            // Decide the layout from the ACTUAL available width/height of this content area, not
+            // just device orientation — a tablet in portrait is often wider than a phone in
+            // landscape, and a small phone in landscape is shorter than this content needs, so
+            // both cases need to be handled by real measurements rather than a single boolean.
+            BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxSize()) {
+                val isWide = maxWidth >= 600.dp // tablets & large foldables: side-by-side layout
+                val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+                if (isWide || isLandscape) {
+                    Row(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                        artAndVisual(Modifier.weight(1f))
+                        Spacer(Modifier.width(24.dp))
+                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                            Column(
+                                modifier = Modifier
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(bottom = navBarBottom + 12.dp)
+                            ) {
+                                controls(Modifier.fillMaxWidth())
+                            }
+                        }
                     }
-                }
-            } else {
-                // Centre + cap the width so the art/controls stay a comfortable size on tablets.
-                Box(modifier = Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-                    Column(
-                        modifier = Modifier.fillMaxHeight().widthIn(max = 520.dp).padding(horizontal = 26.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Spacer(Modifier.height(8.dp))
-                        artAndVisual(Modifier.fillMaxWidth())
-                        Spacer(Modifier.weight(1f))
-                        controls(Modifier.fillMaxWidth())
-                        Spacer(Modifier.height(18.dp))
+                } else {
+                    // Phones in portrait: scrollable so short/small-screen devices never clip or
+                    // crowd the bottom controls against the system's 3-button navigation bar —
+                    // it simply scrolls instead of overlapping anything.
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(rememberScrollState())
+                                .widthIn(max = 520.dp)
+                                .padding(horizontal = 26.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(Modifier.height(8.dp))
+                            artAndVisual(Modifier.fillMaxWidth())
+                            Spacer(Modifier.height(28.dp))
+                            controls(Modifier.fillMaxWidth())
+                            // Real safety margin: on gesture-nav devices this is small, on classic
+                            // 3-button-nav devices it's the full nav bar height — either way the pill
+                            // row above is never crowded against or hidden behind it.
+                            Spacer(Modifier.height(18.dp + navBarBottom))
+                        }
                     }
                 }
             }
@@ -328,6 +373,13 @@ fun PlayerScreen(navController: NavHostController) {
     }
     if (showSpeedSheet) {
         SpeedSheet(onDismiss = { showSpeedSheet = false }, current = speed, onSelect = { player.setPlaybackSpeed(it) })
+    }
+    if (showEditDialog && song != null) {
+        com.arvin.player.ui.components.EditMetadataDialog(
+            song = song!!,
+            onDismiss = { showEditDialog = false },
+            onSaved = { vm.refreshAfterMetadataEdit() }
+        )
     }
 }
 
@@ -414,9 +466,10 @@ private fun AlbumArt(
 
 @Composable
 private fun PlayButton(isPlaying: Boolean, accent: Color, onClick: () -> Unit) {
+    val scale = com.arvin.player.ui.theme.AdaptiveSize.scale()
     Box(
         modifier = Modifier
-            .size(78.dp)
+            .size(78.dp * scale)
             .pressScale(0.9f)
             .shadow(elevation = 24.dp, shape = CircleShape, spotColor = accent, ambientColor = accent)
             .clip(CircleShape)
@@ -433,7 +486,7 @@ private fun PlayButton(isPlaying: Boolean, accent: Color, onClick: () -> Unit) {
                 if (playing) ArvinIcons.Pause else ArvinIcons.Play,
                 contentDescription = stringResource(R.string.play_pause),
                 tint = Color.White,
-                modifier = Modifier.size(38.dp)
+                modifier = Modifier.size(38.dp * scale)
             )
         }
     }
@@ -552,6 +605,10 @@ private fun LyricsPanel(lyrics: String?, onColor: Color, mutedColor: Color) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SleepTimerSheet(onDismiss: () -> Unit, vm: PlayerViewModel) {
+    var showCustom by remember { mutableStateOf(false) }
+    var customMinutes by remember { mutableStateOf("") }
+    var customSeconds by remember { mutableStateOf("") }
+
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surface) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(stringResource(R.string.sleep_timer), style = MaterialTheme.typography.titleLarge)
@@ -560,6 +617,37 @@ private fun SleepTimerSheet(onDismiss: () -> Unit, vm: PlayerViewModel) {
                 TextButton(onClick = { vm.startSleepTimer(minutes); onDismiss() }) {
                     Text("$minutes " + stringResource(R.string.minutes))
                 }
+            }
+            TextButton(onClick = { showCustom = !showCustom }) {
+                Text(stringResource(R.string.custom_time))
+            }
+            if (showCustom) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedTextField(
+                        value = customMinutes,
+                        onValueChange = { v -> customMinutes = v.filter { it.isDigit() }.take(3) },
+                        label = { Text(stringResource(R.string.minutes)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = customSeconds,
+                        onValueChange = { v -> customSeconds = v.filter { it.isDigit() }.take(2) },
+                        label = { Text(stringResource(R.string.seconds)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                val mins = customMinutes.toIntOrNull() ?: 0
+                val secs = customSeconds.toIntOrNull() ?: 0
+                TextButton(
+                    enabled = mins > 0 || secs > 0,
+                    onClick = {
+                        vm.startSleepTimer(mins, secs)
+                        onDismiss()
+                    }
+                ) { Text(stringResource(R.string.start)) }
             }
             TextButton(onClick = { vm.cancelSleepTimer(); onDismiss() }) {
                 Text(stringResource(R.string.cancel_timer))

@@ -18,6 +18,11 @@
     <!-- Equalizer / visualizer access to the audio session -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
+    <!-- The on-screen visualizer reads real FFT data from the playback session via
+         android.media.audiofx.Visualizer. Android requires RECORD_AUDIO to use that API even
+         though it only reads what's already playing — no microphone is ever used. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- Bluetooth headset metadata (optional, for AVRCP track info) -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />

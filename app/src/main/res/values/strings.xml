@@ -75,4 +75,52 @@
     <string name="play">Play</string>
     <string name="playlist">Playlist</string>
     <string name="reset">Reset</string>
+
+    <string name="liked_songs">Liked songs</string>
+    <string name="delete_playlist_title">Delete playlist?</string>
+    <string name="delete_playlist_body">"%1$s" will be deleted. Songs themselves won\'t be removed from your device.</string>
+    <string name="share">Share</string>
+    <string name="share_song_text">%1$s — %2$s</string>
+    <string name="remove_from_queue">Remove from queue</string>
+
+    <string name="no_liked_songs">No liked songs yet. Tap the heart on any song to add it here.</string>
+    <string name="custom_time">Custom</string>
+    <string name="set_custom_timer">Set custom timer</string>
+    <string name="timer_active">Timer: %1$s remaining</string>
+    <string name="seconds">seconds</string>
+    <string name="start">Start</string>
+    <string name="notif_favorite_added">Added to liked songs</string>
+    <string name="notif_favorite_removed">Removed from liked songs</string>
+    <string name="notif_shuffle_on">Shuffle turned on</string>
+    <string name="notif_shuffle_off">Shuffle turned off</string>
+    <string name="notif_repeat_off">Repeat off</string>
+    <string name="notif_repeat_all">Repeat all</string>
+    <string name="notif_repeat_one">Repeat one</string>
+    <string name="notif_sleep_timer_set">Sleep timer set for %1$s</string>
+    <string name="notif_sleep_timer_cancelled">Sleep timer cancelled</string>
+    <string name="notif_speed_changed">Playback speed set to %1$s×</string>
+    <string name="notif_song_hidden">Song hidden</string>
+    <string name="notif_song_unhidden">Song unhidden</string>
+    <string name="notif_added_to_playlist">Added to playlist</string>
+    <string name="notif_playlist_created">Playlist created</string>
+    <string name="notif_playlist_deleted">Playlist deleted</string>
+    <string name="notif_metadata_saved">Song info updated</string>
+    <string name="notif_metadata_failed">Couldn\'t save changes to the file</string>
+    <string name="notif_artwork_removed">Artwork removed</string>
+
+    <string name="edit_info">Edit info</string>
+    <string name="edit_song_info">Edit song info</string>
+    <string name="title_field">Title</string>
+    <string name="artist_field">Artist</string>
+    <string name="album_field">Album</string>
+    <string name="track_number_field">Track number</string>
+    <string name="genre_field">Genre</string>
+    <string name="change_artwork">Change artwork</string>
+    <string name="remove_artwork">Remove artwork</string>
+    <string name="save">Save</string>
+    <string name="add_songs">Add songs</string>
+    <string name="add_from_library">Choose from library</string>
+    <string name="add_from_folder">Choose from folder</string>
+    <string name="no_songs_in_playlist">This playlist is empty. Tap + to add songs.</string>
+    <string name="metadata_unsupported_format">Editing tags isn\'t supported yet for this file format.</string>
 </resources>

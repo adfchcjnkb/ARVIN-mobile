@@ -53,14 +53,28 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val isFav = favoriteIds.value.contains(songId)
             repo.toggleFavorite(songId, !isFav)
+            com.arvin.player.util.AppNotifier.notify(
+                if (!isFav) com.arvin.player.R.string.notif_favorite_added else com.arvin.player.R.string.notif_favorite_removed
+            )
         }
     }
 
-    fun startSleepTimer(minutes: Int) {
-        com.arvin.player.util.SleepTimerManager.start(minutes, viewModelScope) {
+    fun startSleepTimer(minutes: Int, seconds: Int = 0) {
+        val totalSeconds = minutes * 60 + seconds
+        com.arvin.player.util.SleepTimerManager.startSeconds(totalSeconds, viewModelScope) {
             player.pause()
         }
+        val label = com.arvin.player.util.formatTimerLabel(totalSeconds)
+        com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_sleep_timer_set, label)
     }
 
-    fun cancelSleepTimer() = com.arvin.player.util.SleepTimerManager.cancel()
+    /** Called after the edit-metadata dialog saves, so the library reflects the new tags right away. */
+    fun refreshAfterMetadataEdit() {
+        viewModelScope.launch { repo.refreshLibrary() }
+    }
+
+    fun cancelSleepTimer() {
+        com.arvin.player.util.SleepTimerManager.cancel()
+        com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_sleep_timer_cancelled)
+    }
 }

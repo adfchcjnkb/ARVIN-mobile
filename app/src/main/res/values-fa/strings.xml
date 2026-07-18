@@ -75,4 +75,52 @@
     <string name="play">پخش</string>
     <string name="playlist">لیست پخش</string>
     <string name="reset">بازنشانی</string>
+
+    <string name="liked_songs">آهنگ‌های مورد علاقه</string>
+    <string name="delete_playlist_title">حذف پلی‌لیست؟</string>
+    <string name="delete_playlist_body">"%1$s" حذف خواهد شد. خود آهنگ‌ها از دستگاه شما حذف نمی‌شوند.</string>
+    <string name="share">اشتراک‌گذاری</string>
+    <string name="share_song_text">%1$s — %2$s</string>
+    <string name="remove_from_queue">حذف از صف پخش</string>
+
+    <string name="no_liked_songs">هنوز آهنگی لایک نشده. روی آیکون قلب هر آهنگ بزنید تا اینجا اضافه شود.</string>
+    <string name="custom_time">دلخواه</string>
+    <string name="set_custom_timer">تنظیم تایمر دلخواه</string>
+    <string name="timer_active">تایمر: %1$s باقی‌مانده</string>
+    <string name="seconds">ثانیه</string>
+    <string name="start">شروع</string>
+    <string name="notif_favorite_added">به آهنگ‌های مورد علاقه اضافه شد</string>
+    <string name="notif_favorite_removed">از آهنگ‌های مورد علاقه حذف شد</string>
+    <string name="notif_shuffle_on">پخش تصادفی فعال شد</string>
+    <string name="notif_shuffle_off">پخش تصادفی غیرفعال شد</string>
+    <string name="notif_repeat_off">تکرار خاموش شد</string>
+    <string name="notif_repeat_all">تکرار همه فعال شد</string>
+    <string name="notif_repeat_one">تکرار یک آهنگ فعال شد</string>
+    <string name="notif_sleep_timer_set">تایمر خواب روی %1$s تنظیم شد</string>
+    <string name="notif_sleep_timer_cancelled">تایمر خواب لغو شد</string>
+    <string name="notif_speed_changed">سرعت پخش روی %1$s× تنظیم شد</string>
+    <string name="notif_song_hidden">آهنگ پنهان شد</string>
+    <string name="notif_song_unhidden">آهنگ آشکار شد</string>
+    <string name="notif_added_to_playlist">به پلی‌لیست اضافه شد</string>
+    <string name="notif_playlist_created">پلی‌لیست ساخته شد</string>
+    <string name="notif_playlist_deleted">پلی‌لیست حذف شد</string>
+    <string name="notif_metadata_saved">اطلاعات آهنگ به‌روزرسانی شد</string>
+    <string name="notif_metadata_failed">تغییرات روی فایل ذخیره نشد</string>
+    <string name="notif_artwork_removed">عکس آهنگ حذف شد</string>
+
+    <string name="edit_info">ویرایش اطلاعات</string>
+    <string name="edit_song_info">ویرایش اطلاعات آهنگ</string>
+    <string name="title_field">عنوان</string>
+    <string name="artist_field">خواننده</string>
+    <string name="album_field">آلبوم</string>
+    <string name="track_number_field">شماره ترک</string>
+    <string name="genre_field">ژانر</string>
+    <string name="change_artwork">تغییر عکس</string>
+    <string name="remove_artwork">حذف عکس</string>
+    <string name="save">ذخیره</string>
+    <string name="add_songs">افزودن آهنگ</string>
+    <string name="add_from_library">انتخاب از کتابخانه</string>
+    <string name="add_from_folder">انتخاب از پوشه</string>
+    <string name="no_songs_in_playlist">این پلی‌لیست خالی است. برای افزودن آهنگ روی + بزنید.</string>
+    <string name="metadata_unsupported_format">ویرایش تگ برای این فرمت فایل هنوز پشتیبانی نمی‌شود.</string>
 </resources>

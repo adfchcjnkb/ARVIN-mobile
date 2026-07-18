@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import com.arvin.player.R
 import com.arvin.player.data.repository.MusicRepository
 import com.arvin.player.media.PlayerController
+import com.arvin.player.ui.components.MiniPlayer
 import com.arvin.player.ui.components.SongListItem
 import com.arvin.player.ui.components.pressScale
 import com.arvin.player.ui.screens.lock.LockScreen
@@ -35,6 +36,8 @@ fun HiddenSongsScreen(navController: NavHostController) {
     var refreshKey by remember { mutableStateOf(0) }
     val currentSong by player.currentSong.collectAsState()
     val isPlaying by player.isPlaying.collectAsState()
+    val favoriteIds by repo.favoriteDao.getAllFavoriteIds().collectAsState(initial = emptyList())
+    val playlists by repo.playlistDao.getAllPlaylists().collectAsState(initial = emptyList())
 
     if (hasPin == true && !unlocked) {
         LockScreen(onUnlocked = { unlocked = true })
@@ -42,6 +45,7 @@ fun HiddenSongsScreen(navController: NavHostController) {
     }
 
     val hidden = remember(refreshKey) { repo.hiddenSongs() }
+    var songBeingEdited by remember { mutableStateOf<com.arvin.player.data.model.Song?>(null) }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -55,7 +59,8 @@ fun HiddenSongsScreen(navController: NavHostController) {
                     }
                 }
             )
-        }
+        },
+        bottomBar = { MiniPlayer(player) { navController.navigate(com.arvin.player.ui.navigation.Routes.PLAYER) } }
     ) { padding ->
         if (hidden.isEmpty()) {
             Box(modifier = Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -72,16 +77,50 @@ fun HiddenSongsScreen(navController: NavHostController) {
                 SongListItem(
                     song = song,
                     onClick = { player.playQueue(hidden, hidden.indexOf(song)) },
+                    isFavorite = favoriteIds.contains(song.id),
                     isCurrent = currentSong?.id == song.id,
                     isPlaying = isPlaying && currentSong?.id == song.id,
+                    onToggleFavorite = {
+                        val nowFav = !favoriteIds.contains(song.id)
+                        scope.launch {
+                            repo.toggleFavorite(song.id, nowFav)
+                            com.arvin.player.util.AppNotifier.notify(
+                                if (nowFav) R.string.notif_favorite_added else R.string.notif_favorite_removed
+                            )
+                        }
+                    },
                     onUnhide = {
                         scope.launch {
                             repo.unhideSong(song.id)
                             refreshKey++
+                            com.arvin.player.util.AppNotifier.notify(R.string.notif_song_unhidden)
                         }
-                    }
+                    },
+                    playlists = playlists,
+                    onAddToPlaylist = { playlistId ->
+                        scope.launch {
+                            repo.addToPlaylist(playlistId, song.id)
+                            com.arvin.player.util.AppNotifier.notify(R.string.notif_added_to_playlist)
+                        }
+                    },
+                    onCreatePlaylist = { name ->
+                        scope.launch {
+                            val id = repo.createPlaylist(name)
+                            repo.addToPlaylist(id, song.id)
+                            com.arvin.player.util.AppNotifier.notify(R.string.notif_playlist_created)
+                        }
+                    },
+                    onEditMetadata = { songBeingEdited = song }
                 )
             }
         }
+    }
+
+    songBeingEdited?.let { song ->
+        com.arvin.player.ui.components.EditMetadataDialog(
+            song = song,
+            onDismiss = { songBeingEdited = null },
+            onSaved = { scope.launch { repo.refreshLibrary(); refreshKey++ } }
+        )
     }
 }

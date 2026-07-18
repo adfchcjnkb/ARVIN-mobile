@@ -107,6 +107,13 @@ class MusicRepository(private val context: Context) {
     fun hiddenSongs(): List<Song> =
         _allSongsIncludingHidden.value.filter { it.id in _hiddenIds.value }
 
+    /** Songs the user has liked, in the same order/shape as the normal library list —
+     *  visible songs only (a hidden-and-liked song stays out of "Liked songs" too). */
+    fun favoriteSongs(favoriteIds: List<Long>): List<Song> {
+        val idSet = favoriteIds.toSet()
+        return _allSongs.value.filter { it.id in idSet }
+    }
+
     suspend fun hideSong(songId: Long) = hiddenSongDao.hide(HiddenSongEntity(songId))
     suspend fun unhideSong(songId: Long) = hiddenSongDao.unhide(songId)
 

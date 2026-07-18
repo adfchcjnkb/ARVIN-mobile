@@ -193,8 +193,39 @@ class PlayerController private constructor(context: Context) {
         controller?.let { if (it.isPlaying) it.pause() else it.play() }
     }
 
-    fun skipNext() = controller?.seekToNext()
-    fun skipPrevious() = controller?.seekToPrevious()
+    /**
+     * Advances to the next track. Guarded with hasNextMediaItem() so this never silently no-ops —
+     * and when the queue is on its last track with repeat off, "next" wraps back around to the
+     * first track (rather than doing nothing), matching how most music players behave.
+     */
+    fun skipNext() {
+        val c = controller ?: return
+        when {
+            c.hasNextMediaItem() -> c.seekToNext()
+            c.mediaItemCount > 0 -> {
+                c.seekTo(0, 0L)
+                c.play()
+            }
+        }
+    }
+
+    /** Guarded the same way as [skipNext] so a stale/disconnected controller can't swallow the tap. */
+    fun skipPrevious() {
+        val c = controller ?: return
+        if (c.hasPreviousMediaItem() || c.currentPosition > 3000L) {
+            c.seekToPrevious()
+        } else if (c.mediaItemCount > 0) {
+            c.seekTo(0, 0L)
+        }
+    }
+
+    /** Removes the currently playing track from the queue (used by the mini-player's "remove" action). */
+    fun removeCurrentFromQueue() {
+        val c = controller ?: return
+        val index = c.currentMediaItemIndex
+        if (index in 0 until c.mediaItemCount) c.removeMediaItem(index)
+    }
+
     fun seekTo(positionMs: Long) { controller?.seekTo(positionMs); _positionMs.value = positionMs }
 
     fun currentDurationMs(): Long = controller?.duration?.coerceAtLeast(0) ?: 0L
@@ -202,6 +233,9 @@ class PlayerController private constructor(context: Context) {
     fun toggleShuffle() {
         val newVal = !(controller?.shuffleModeEnabled ?: false)
         controller?.shuffleModeEnabled = newVal
+        com.arvin.player.util.AppNotifier.notify(
+            if (newVal) com.arvin.player.R.string.notif_shuffle_on else com.arvin.player.R.string.notif_shuffle_off
+        )
     }
 
     fun cycleRepeatMode() {
@@ -211,10 +245,18 @@ class PlayerController private constructor(context: Context) {
             RepeatMode.ONE -> Player.REPEAT_MODE_OFF
         }
         controller?.repeatMode = next
+        com.arvin.player.util.AppNotifier.notify(
+            when (next) {
+                Player.REPEAT_MODE_ALL -> com.arvin.player.R.string.notif_repeat_all
+                Player.REPEAT_MODE_ONE -> com.arvin.player.R.string.notif_repeat_one
+                else -> com.arvin.player.R.string.notif_repeat_off
+            }
+        )
     }
 
     fun setPlaybackSpeed(speed: Float) {
         controller?.setPlaybackSpeed(speed)
+        com.arvin.player.util.AppNotifier.notify(com.arvin.player.R.string.notif_speed_changed, speed)
     }
 
     fun pause() = controller?.pause()

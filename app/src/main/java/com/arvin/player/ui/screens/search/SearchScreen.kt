@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import com.arvin.player.R
 import com.arvin.player.data.repository.MusicRepository
 import com.arvin.player.media.PlayerController
+import com.arvin.player.ui.components.MiniPlayer
 import com.arvin.player.ui.components.SongListItem
 import com.arvin.player.ui.components.pressScale
 import com.arvin.player.ui.icons.ArvinIcons
@@ -48,7 +49,8 @@ fun SearchScreen(navController: NavHostController) {
                     }
                 }
             )
-        }
+        },
+        bottomBar = { MiniPlayer(player) { navController.navigate(com.arvin.player.ui.navigation.Routes.PLAYER) } }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             OutlinedTextField(
