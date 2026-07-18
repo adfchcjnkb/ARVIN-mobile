@@ -75,8 +75,8 @@
     <string name="delete_playlist_body">« %1$s » sera supprimée. Les morceaux eux-mêmes ne seront pas supprimés de votre appareil.</string>
     <string name="share">Partager</string>
     <string name="share_song_text">%1$s — %2$s</string>
-    <string name="remove_from_queue">Retirer de la file d'attente</string>
-    <string name="no_liked_songs">Aucun titre aimé pour l'instant. Touchez le cœur d'un titre pour l'ajouter ici.</string>
+    <string name="remove_from_queue">Retirer de la file d\'attente</string>
+    <string name="no_liked_songs">Aucun titre aimé pour l\'instant. Touchez le cœur d\'un titre pour l\'ajouter ici.</string>
     <string name="custom_time">Personnalisé</string>
     <string name="set_custom_timer">Définir une minuterie personnalisée</string>
     <string name="timer_active">Minuterie : %1$s restant</string>
@@ -98,7 +98,7 @@
     <string name="notif_playlist_created">Playlist créée</string>
     <string name="notif_playlist_deleted">Playlist supprimée</string>
     <string name="notif_metadata_saved">Infos du titre mises à jour</string>
-    <string name="notif_metadata_failed">Impossible d'enregistrer les modifications dans le fichier</string>
+    <string name="notif_metadata_failed">Impossible d\'enregistrer les modifications dans le fichier</string>
     <string name="notif_artwork_removed">Pochette supprimée</string>
     <string name="edit_info">Modifier les infos</string>
     <string name="edit_song_info">Modifier les infos du titre</string>
@@ -114,5 +114,5 @@
     <string name="add_from_library">Choisir depuis la bibliothèque</string>
     <string name="add_from_folder">Choisir depuis un dossier</string>
     <string name="no_songs_in_playlist">Cette playlist est vide. Touchez + pour ajouter des titres.</string>
-    <string name="metadata_unsupported_format">La modification des tags n'est pas encore prise en charge pour ce format.</string>
+    <string name="metadata_unsupported_format">La modification des tags n\'est pas encore prise en charge pour ce format.</string>
 </resources>
